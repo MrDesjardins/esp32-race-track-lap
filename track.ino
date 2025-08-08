@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SH110X.h>
@@ -31,7 +32,27 @@ unsigned long press2Time = 0;
 unsigned long prevPress2Time = 0;
 unsigned long fastest2 = ULONG_MAX;
 
-static unsigned long lastUpdate = 0;
+// Sound
+const int speakerPin = 16; // Use any PWM-capable pin
+bool revving = false;
+unsigned long lastUpdateSound = 0;
+int currentFreq = 200;
+const int targetFreq = 1000;
+const int freqStep = 20;
+const int stepDelay = 15; // ms
+
+// Happy sound melody (frequencies in Hz)
+const int happyMelody[] = {523, 659, 783, 1047}; // C5, E5, G5, C6
+const int happyDurations[] = {150, 150, 150, 300}; // ms per note
+const int happyNotesCount = sizeof(happyMelody) / sizeof(happyMelody[0]);
+
+bool playingHappySound = false;
+int happyNoteIndex = 0;
+unsigned long happyNoteStartTime = 0;
+
+
+
+static unsigned long lastUpdateLCD = 0;
 bool runningAnimation = true;
 
 void setup() {
@@ -56,7 +77,6 @@ void setup() {
 
   resetDebouncer.attach(resetPin);
   resetDebouncer.interval(debounceDelayMs);
-
   resetTimer();
 }
 
@@ -77,6 +97,10 @@ void loop() {
       Serial.println("diff: " + String(diff) + " (" + String(fastest1) + ")");
       if (diff < fastest1) {
         fastest1 = diff;
+        Serial.println("Button 1 new record");
+        startHappySound();   // Play happy sound on new best
+      }else {
+        startRevvingSound();
       }
     }
   }
@@ -90,6 +114,10 @@ void loop() {
       unsigned long diff = press2Time - prevPress2Time;
       if (diff < fastest2) {
         fastest2 = diff;
+        Serial.println("Button 2 new record");
+        startHappySound();   // Play happy sound on new best
+      } else {
+        startRevvingSound();
       }
     }
   }
@@ -106,12 +134,18 @@ void loop() {
     prevPress2Time = press2Time = now;
   }
 
-  if (now - lastUpdate >= 100) {  // Update display every 100ms¸
+  if (now - lastUpdateLCD >= 30) {  // Update display every 30ms (100ms would not be great: wont show 2nd decimal moving)
     if(runningAnimation == false){
       updateDisplay(now);
     }
-    lastUpdate = now;
+    lastUpdateLCD = now;
   }
+
+  // Non-blocking sound update
+  updateRevvingSound();
+
+  // Non-blocking happy sound
+  updateHappySound();
 }
 
 String formatSecMillis(unsigned long ms) {
@@ -194,10 +228,71 @@ void showCountdownAnimation() {
     display.setCursor(x, y);
     display.print(countdownTexts[i]);
     display.display();
-
-    delay(1000); // Wait 1 second
+    // Wait 1 second
+    tone(speakerPin, 200); // Beep
+    delay(300); 
+    noTone(speakerPin);
+    delay(700); 
+    // 300+700 = 1 second
   }
-
+  tone(speakerPin, 50); // Beep
+  delay(2000); // Wait 1 second
+  noTone(speakerPin);
   display.clearDisplay(); // Clean up after animation
 }
 
+void startRevvingSound() {
+  if (playingHappySound) {
+    return; // Skip since we are already playing the happy sound
+  }
+  revving = true;
+  currentFreq = 200;
+  lastUpdateSound = millis();
+  tone(speakerPin, currentFreq);
+}
+
+void updateRevvingSound() {
+  if (revving) {
+    unsigned long now = millis();
+    if(now - lastUpdateSound >= stepDelay){
+      lastUpdateSound = now;
+      tone(speakerPin, currentFreq);
+      currentFreq += freqStep;
+      if (currentFreq > targetFreq) {
+        noTone(speakerPin);
+        revving = false;
+      }
+    }
+  }
+}
+
+
+void startHappySound() {
+  revving = false; // Stop revving to avoid too many noise
+  playingHappySound = true;
+  happyNoteIndex = 0;
+  happyNoteStartTime = millis();
+  tone(speakerPin, happyMelody[happyNoteIndex]);
+}
+
+void updateHappySound() {
+  if (!playingHappySound) return;
+
+  unsigned long now = millis();
+  if (now - happyNoteStartTime >= happyDurations[happyNoteIndex]) {
+    happyNoteIndex++;
+    Serial.print("Happy note index advanced to: ");
+    Serial.println(happyNoteIndex);
+
+    if (happyNoteIndex >= happyNotesCount) {
+      noTone(speakerPin);
+      playingHappySound = false;
+      Serial.println("Happy sound ended");
+    } else {
+      tone(speakerPin, happyMelody[happyNoteIndex]);
+      happyNoteStartTime = now;
+      Serial.print("Playing happy note freq: ");
+      Serial.println(happyMelody[happyNoteIndex]);
+    }
+  }
+}
