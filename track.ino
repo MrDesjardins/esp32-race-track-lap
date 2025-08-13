@@ -12,7 +12,7 @@
 Adafruit_SH1106G display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 // Constant Debounce
-const int debounceDelayMs = 50;
+const int debounceDelayMs = 100;
 const int resetLongPressDurationMs = 2000;
 
 // Button pins

@@ -14,15 +14,25 @@ The project contains the code for the ESP-32 that power the lap counter.
 1. Wire
 1. Bounce2@2.71.0
 
-# Wiring
+# Wiring Details
+Reset Button
+- One branch -> 10k ohm -> GND
+- One branch -> GPIO 23
 
-| Device    | ESP32 Pin | Device       Pin |
-| --------- | --------- | ---------------- |
-| Button 1  | GPIO 18   | GND              |
-| Button 2  | GPIO 19   | GND              |
-| Reset Btn | GPIO 23   | GND              |
-| OLED SDA  | GPIO 21   | SDA              |
-| OLED SCL  | GPIO 22   | SCL              |
-| OLED GND  | GND       | GND              |
-| OLED VCC  | VCC       | VCC              |
+Speaker
+- Black -> 100ohm -> GPIO16
+- Red -> 5V
 
+Reed Button 1
+- One branch -> 10k ohm - > GND
+- One branch -> GPIO 18
+
+Reed Button 2
+- One branch -> 10k ohm - > GND
+- One branch -> GPIO 19
+
+LCD
+- GND -> GND
+- VCC -> 3.3V
+- SDA -> GPIO 21
+- SCL -> GPIO 22
