@@ -227,10 +227,6 @@ void updateDisplay(unsigned long now) {
     display.print("Win: ");
     display.print(f1win ? "left" : "right");
     display.print(" car!(");
-    Serial.print("faster 1:");
-    Serial.println(fastest1);
-    Serial.print("faster 2:");
-    Serial.println(fastest2);
     unsigned long diff;
     if (fastest1 > fastest2) {
       diff = fastest1 - fastest2;
@@ -276,6 +272,7 @@ void turnOnOff(){
     }
     noTone(speakerPin); 
     display.clearDisplay();
+    display.display();
   }
   else {
     const int frequencies[] = {220, 262, 294, 330, 392, 440, 523}; //  # A3, C4, D4, E4, G4, A4, C5
