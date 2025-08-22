@@ -15,24 +15,39 @@ The project contains the code for the ESP-32 that power the lap counter.
 1. Bounce2@2.71.0
 
 # Wiring Details
-Reset Button
+## Reset Button
 - One branch -> 10k ohm -> GND
 - One branch -> GPIO 23
 
-Speaker
+## Speaker
 - Black -> 100ohm -> GPIO16
 - Red -> 5V
 
-Reed Button 1
+## Reed Button 1
 - One branch -> 10k ohm - > GND
 - One branch -> GPIO 18
 
-Reed Button 2
+## Reed Button 2
 - One branch -> 10k ohm - > GND
 - One branch -> GPIO 19
 
-LCD
+## LCD
 - GND -> GND
 - VCC -> 3.3V
 - SDA -> GPIO 21
 - SCL -> GPIO 22
+
+## Power
+MP1584
+- Negative in: Connect to 6v/2a negative and 470 uf capacitor
+- Positive in: Connect to 6v/2a positive and 470 uf capacitor
+- Negative out: Connect to ESP-32 GND
+- Positive out: Connect to ESP-32 5v
+
+Race Track
+- Negative from female (direct connection)
+- Positive from female (direct connection)
+
+# Full Schematic
+
+![](./CarLapSchematic.png)
